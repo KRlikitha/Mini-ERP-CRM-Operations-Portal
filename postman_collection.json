@@ -1,0 +1,277 @@
+{
+  "info": {
+    "name": "Apex Mini ERP + CRM Operations Portal API",
+    "description": "Complete REST API collection for Mini ERP + CRM Portal featuring Auth, Customer CRM, Product Inventory, Sales Challans with atomic stock deduction, and PDF exports.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth & Roles",
+      "item": [
+        {
+          "name": "POST Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@erp.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "POST Login (Sales)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sales@erp.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET Auth Me Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Customer CRM Module",
+      "item": [
+        {
+          "name": "GET Customers (With Search & Filters)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers?customerType=WHOLESALE&status=ACTIVE",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "customerType", "value": "WHOLESALE" },
+                { "key": "status", "value": "ACTIVE" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Vikram Singh\",\n  \"mobile\": \"9811223344\",\n  \"email\": \"vikram@singhdistributors.com\",\n  \"businessName\": \"Singh Industrial Supplies\",\n  \"gstNumber\": \"27AAAAA1234A1Z0\",\n  \"customerType\": \"WHOLESALE\",\n  \"address\": \"Plot 44, MIDC Industrial Area, Thane, MH\",\n  \"status\": \"LEAD\",\n  \"followUpDate\": \"2026-08-20\",\n  \"notes\": \"Referred by Apex partner network.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "POST Add Customer Follow-up Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Discussed wholesale pricing tiers over phone call. Customer requested quotation for 500m copper cable.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers/CUSTOMER_ID_HERE/follow-ups",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "CUSTOMER_ID_HERE", "follow-ups"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Product & Inventory Module",
+      "item": [
+        {
+          "name": "GET Products (All / Low Stock Filter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products?lowStock=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "lowStock", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Create Product SKU",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Heavy Duty Relay 24V DC\",\n  \"sku\": \"RLY-24V-HD\",\n  \"category\": \"Electrical & Controls\",\n  \"unitPrice\": 350.0,\n  \"currentStock\": 100,\n  \"minStockAlert\": 20,\n  \"location\": \"Warehouse A - Shelf 09\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "POST Manual Stock Adjustment (IN/OUT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 25,\n  \"movementType\": \"IN\",\n  \"reason\": \"Received shipment from factory vendor #PO-4091\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/PRODUCT_ID_HERE/adjust-stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "PRODUCT_ID_HERE", "adjust-stock"]
+            }
+          }
+        },
+        {
+          "name": "GET Stock Movement Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/stock-movements",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "stock-movements"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Sales Challan Module",
+      "item": [
+        {
+          "name": "GET Sales Challans List",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/challans",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Sales Challan (Confirmed with Stock Deduct)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"CUSTOMER_ID_HERE\",\n  \"status\": \"CONFIRMED\",\n  \"items\": [\n    {\n      \"productId\": \"PRODUCT_ID_HERE\",\n      \"quantity\": 2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/challans",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Confirm Sales Challan",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/challans/CHALLAN_ID_HERE/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans", "CHALLAN_ID_HERE", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "GET Download Challan Invoice PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/challans/CHALLAN_ID_HERE/pdf",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans", "CHALLAN_ID_HERE", "pdf"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
