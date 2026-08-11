@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
   'https://mini-erp-crm-operations-portal-irck.onrender.com';
 
 export const api = axios.create({
