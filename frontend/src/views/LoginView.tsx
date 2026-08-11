@@ -73,7 +73,11 @@ export const LoginView: React.FC = () => {
               fontSize: '0.8125rem',
               marginBottom: '1.25rem',
             }}>
-              {error}
+             {error && (
+  <div>
+    {typeof error === "string" ? error : "Login failed. Please try again."}
+  </div>
+)}
             </div>
           )}
 
