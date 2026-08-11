@@ -29,7 +29,7 @@ export const DashboardView: React.FC<{ setActiveTab: (tab: string) => void }> = 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/dashboard/stats');
+      const res = await api.get('/api/dashboard/stats');
       setData(res.data);
     } catch (err) {
       console.error('Failed to fetch dashboard stats', err);
