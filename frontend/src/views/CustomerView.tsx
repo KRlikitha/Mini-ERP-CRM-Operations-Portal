@@ -18,8 +18,10 @@ import {
 
 export const CustomerView: React.FC = () => {
   const { hasRole } = useAuth();
+
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -46,12 +48,19 @@ export const CustomerView: React.FC = () => {
 
   const [followUpNote, setFollowUpNote] = useState('');
 
+  // Fetch customers
   const fetchCustomers = async () => {
     setLoading(true);
+
     try {
-      const res = await api.get('/customers', {
-        params: { search, status: statusFilter, customerType: typeFilter },
+      const res = await api.get('/api/customers', {
+        params: {
+          search,
+          status: statusFilter,
+          customerType: typeFilter,
+        },
       });
+
       setCustomers(res.data.data);
     } catch (err) {
       console.error('Failed to fetch customers', err);
@@ -64,6 +73,7 @@ export const CustomerView: React.FC = () => {
     fetchCustomers();
   }, [search, statusFilter, typeFilter]);
 
+  // Open Add Customer Modal
   const openAddModal = () => {
     setFormData({
       name: '',
@@ -77,11 +87,14 @@ export const CustomerView: React.FC = () => {
       followUpDate: '',
       notes: '',
     });
+
     setIsAddModalOpen(true);
   };
 
+  // Open Edit Customer Modal
   const openEditModal = (c: any) => {
     setSelectedCustomer(c);
+
     setFormData({
       name: c.name,
       mobile: c.mobile,
@@ -94,62 +107,124 @@ export const CustomerView: React.FC = () => {
       followUpDate: c.followUpDate || '',
       notes: c.notes || '',
     });
+
     setIsEditModalOpen(true);
   };
 
+  // View Customer Details
   const openDetailModal = async (id: string) => {
     try {
-      const res = await api.get(`/customers/${id}`);
+      const res = await api.get(`/api/customers/${id}`);
       setDetailCustomer(res.data.customer);
     } catch (err) {
       console.error('Failed to load customer detail', err);
     }
   };
 
+  // Create Customer
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      await api.post('/customers', formData);
+      await api.post('/api/customers', formData);
+
       setIsAddModalOpen(false);
       fetchCustomers();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to create customer');
+      alert(
+        err.response?.data?.error || 'Failed to create customer'
+      );
     }
   };
 
+  // Edit Customer
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      await api.put(`/customers/${selectedCustomer.id}`, formData);
+      await api.put(
+        `/api/customers/${selectedCustomer.id}`,
+        formData
+      );
+
       setIsEditModalOpen(false);
       fetchCustomers();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to update customer');
+      alert(
+        err.response?.data?.error || 'Failed to update customer'
+      );
     }
   };
 
+  // Add Follow-up Note
   const handleAddFollowUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!followUpNote.trim() || !detailCustomer) return;
+
     try {
-      await api.post(`/customers/${detailCustomer.id}/follow-ups`, { note: followUpNote });
+      await api.post(
+        `/api/customers/${detailCustomer.id}/follow-ups`,
+        {
+          note: followUpNote,
+        }
+      );
+
       setFollowUpNote('');
       openDetailModal(detailCustomer.id);
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to add follow-up note');
+      alert(
+        err.response?.data?.error ||
+          'Failed to add follow-up note'
+      );
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} className="animate-fade-in">
-      
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.5rem',
+      }}
+      className="animate-fade-in"
+    >
       {/* Action & Filter Toolbar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
-          
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '0.75rem',
+            flex: 1,
+          }}
+        >
           {/* Search Box */}
-          <div style={{ position: 'relative', width: '280px' }}>
-            <Search size={18} color="#64748b" style={{ position: 'absolute', left: '12px', top: '10px' }} />
+          <div
+            style={{
+              position: 'relative',
+              width: '280px',
+            }}
+          >
+            <Search
+              size={18}
+              color="#64748b"
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '10px',
+              }}
+            />
+
             <input
               type="text"
               className="form-input"
@@ -161,7 +236,12 @@ export const CustomerView: React.FC = () => {
           </div>
 
           {/* Status Filter */}
-          <select className="form-select" style={{ width: '160px' }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <select
+            className="form-select"
+            style={{ width: '160px' }}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
             <option value="">All Statuses</option>
             <option value="LEAD">Lead</option>
             <option value="ACTIVE">Active</option>
@@ -169,7 +249,12 @@ export const CustomerView: React.FC = () => {
           </select>
 
           {/* Type Filter */}
-          <select className="form-select" style={{ width: '160px' }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+          <select
+            className="form-select"
+            style={{ width: '160px' }}
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
             <option value="">All Types</option>
             <option value="WHOLESALE">Wholesale</option>
             <option value="RETAIL">Retail</option>
@@ -177,10 +262,14 @@ export const CustomerView: React.FC = () => {
           </select>
         </div>
 
-        {/* Add Customer Button (Admin/Sales only) */}
+        {/* Add Customer Button */}
         {hasRole(['ADMIN', 'SALES']) && (
-          <button className="btn btn-primary" onClick={openAddModal}>
-            <Plus size={18} /> Add New Customer
+          <button
+            className="btn btn-primary"
+            onClick={openAddModal}
+          >
+            <Plus size={18} />
+            Add New Customer
           </button>
         )}
       </div>
@@ -199,16 +288,31 @@ export const CustomerView: React.FC = () => {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                <td
+                  colSpan={7}
+                  style={{
+                    textAlign: 'center',
+                    padding: '2rem',
+                    color: '#94a3b8',
+                  }}
+                >
                   Loading customer database...
                 </td>
               </tr>
             ) : customers.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                <td
+                  colSpan={7}
+                  style={{
+                    textAlign: 'center',
+                    padding: '2rem',
+                    color: '#94a3b8',
+                  }}
+                >
                   No customers found matching filters.
                 </td>
               </tr>
@@ -216,37 +320,134 @@ export const CustomerView: React.FC = () => {
               customers.map((c) => (
                 <tr key={c.id}>
                   <td>
-                    <div style={{ fontWeight: 800, color: '#f8fafc' }}>{c.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{c.businessName}</div>
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        color: '#f8fafc',
+                      }}
+                    >
+                      {c.name}
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: '0.75rem',
+                        color: '#94a3b8',
+                      }}
+                    >
+                      {c.businessName}
+                    </div>
                   </td>
+
                   <td>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.5rem', background: '#1e293b', borderRadius: '4px', border: '1px solid var(--border-color)', color: '#60a5fa' }}>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        padding: '0.2rem 0.5rem',
+                        background: '#1e293b',
+                        borderRadius: '4px',
+                        border:
+                          '1px solid var(--border-color)',
+                        color: '#60a5fa',
+                      }}
+                    >
                       {c.customerType}
                     </span>
                   </td>
-                  <td style={{ fontSize: '0.8125rem' }}>
-                    <div><Phone size={12} color="#94a3b8" style={{ display: 'inline', verticalAlign: 'middle' }} /> {c.mobile}</div>
-                    <div style={{ color: '#94a3b8' }}><Mail size={12} color="#94a3b8" style={{ display: 'inline', verticalAlign: 'middle' }} /> {c.email}</div>
+
+                  <td
+                    style={{
+                      fontSize: '0.8125rem',
+                    }}
+                  >
+                    <div>
+                      <Phone
+                        size={12}
+                        color="#94a3b8"
+                        style={{
+                          display: 'inline',
+                          verticalAlign: 'middle',
+                        }}
+                      />{' '}
+                      {c.mobile}
+                    </div>
+
+                    <div
+                      style={{
+                        color: '#94a3b8',
+                      }}
+                    >
+                      <Mail
+                        size={12}
+                        color="#94a3b8"
+                        style={{
+                          display: 'inline',
+                          verticalAlign: 'middle',
+                        }}
+                      />{' '}
+                      {c.email}
+                    </div>
                   </td>
-                  <td style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>
+
+                  <td
+                    style={{
+                      fontSize: '0.8125rem',
+                      color: '#94a3b8',
+                    }}
+                  >
                     {c.gstNumber || 'N/A'}
                   </td>
+
                   <td>
-                    <span className={`badge badge-${c.status.toLowerCase()}`}>
+                    <span
+                      className={`badge badge-${c.status.toLowerCase()}`}
+                    >
                       {c.status}
                     </span>
                   </td>
-                  <td style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>
-                    {c.followUpDate ? new Date(c.followUpDate).toLocaleDateString() : 'None'}
+
+                  <td
+                    style={{
+                      fontSize: '0.8125rem',
+                      color: '#94a3b8',
+                    }}
+                  >
+                    {c.followUpDate
+                      ? new Date(
+                          c.followUpDate
+                        ).toLocaleDateString()
+                      : 'None'}
                   </td>
+
                   <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="btn btn-secondary btn-sm" onClick={() => openDetailModal(c.id)} title="View Detail & Follow-ups">
-                        <Eye size={14} /> Detail
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() =>
+                          openDetailModal(c.id)
+                        }
+                        title="View Detail & Follow-ups"
+                      >
+                        <Eye size={14} />
+                        Detail
                       </button>
+
                       {hasRole(['ADMIN', 'SALES']) && (
-                        <button className="btn btn-secondary btn-sm" onClick={() => openEditModal(c)} title="Edit Customer">
-                          <Edit2 size={14} /> Edit
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() =>
+                            openEditModal(c)
+                          }
+                          title="Edit Customer"
+                        >
+                          <Edit2 size={14} />
+                          Edit
                         </button>
                       )}
                     </div>
@@ -263,74 +464,302 @@ export const CustomerView: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content animate-fade-in">
             <div className="modal-header">
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#f8fafc' }}>Add New Customer</h3>
-              <button onClick={() => setIsAddModalOpen(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>
+              <h3
+                style={{
+                  fontSize: '1.125rem',
+                  fontWeight: 700,
+                  color: '#f8fafc',
+                }}
+              >
+                Add New Customer
+              </h3>
+
+              <button
+                onClick={() =>
+                  setIsAddModalOpen(false)
+                }
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={20} />
+              </button>
             </div>
+
             <form onSubmit={handleCreateSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
+                }}
+              >
                 <div className="form-group">
-                  <label className="form-label">Customer Name *</label>
-                  <input type="text" className="form-input" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. Rajesh Sharma" />
+                  <label className="form-label">
+                    Customer Name *
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-input"
+                    required
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        name: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. Rajesh Sharma"
+                  />
                 </div>
+
                 <div className="form-group">
-                  <label className="form-label">Business Name *</label>
-                  <input type="text" className="form-input" required value={formData.businessName} onChange={(e) => setFormData({ ...formData, businessName: e.target.value })} placeholder="e.g. Sharma Traders" />
+                  <label className="form-label">
+                    Business Name *
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-input"
+                    required
+                    value={formData.businessName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        businessName: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. Sharma Traders"
+                  />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
+                }}
+              >
                 <div className="form-group">
-                  <label className="form-label">Mobile Number *</label>
-                  <input type="text" className="form-input" required value={formData.mobile} onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} placeholder="10-digit mobile" />
+                  <label className="form-label">
+                    Mobile Number *
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-input"
+                    required
+                    value={formData.mobile}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        mobile: e.target.value,
+                      })
+                    }
+                    placeholder="10-digit mobile"
+                  />
                 </div>
+
                 <div className="form-group">
-                  <label className="form-label">Email Address *</label>
-                  <input type="email" className="form-input" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="email@company.com" />
+                  <label className="form-label">
+                    Email Address *
+                  </label>
+
+                  <input
+                    type="email"
+                    className="form-input"
+                    required
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        email: e.target.value,
+                      })
+                    }
+                    placeholder="email@company.com"
+                  />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns:
+                    '1fr 1fr 1fr',
+                  gap: '1rem',
+                }}
+              >
                 <div className="form-group">
-                  <label className="form-label">Customer Type</label>
-                  <select className="form-select" value={formData.customerType} onChange={(e) => setFormData({ ...formData, customerType: e.target.value })}>
-                    <option value="WHOLESALE">Wholesale</option>
-                    <option value="RETAIL">Retail</option>
-                    <option value="DISTRIBUTOR">Distributor</option>
+                  <label className="form-label">
+                    Customer Type
+                  </label>
+
+                  <select
+                    className="form-select"
+                    value={formData.customerType}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        customerType:
+                          e.target.value,
+                      })
+                    }
+                  >
+                    <option value="WHOLESALE">
+                      Wholesale
+                    </option>
+                    <option value="RETAIL">
+                      Retail
+                    </option>
+                    <option value="DISTRIBUTOR">
+                      Distributor
+                    </option>
                   </select>
                 </div>
+
                 <div className="form-group">
-                  <label className="form-label">Status</label>
-                  <select className="form-select" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
-                    <option value="LEAD">Lead</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
+                  <label className="form-label">
+                    Status
+                  </label>
+
+                  <select
+                    className="form-select"
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="LEAD">
+                      Lead
+                    </option>
+                    <option value="ACTIVE">
+                      Active
+                    </option>
+                    <option value="INACTIVE">
+                      Inactive
+                    </option>
                   </select>
                 </div>
+
                 <div className="form-group">
-                  <label className="form-label">GSTIN (Optional)</label>
-                  <input type="text" className="form-input" value={formData.gstNumber} onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })} placeholder="27AAAAA0000A1Z5" />
+                  <label className="form-label">
+                    GSTIN (Optional)
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.gstNumber}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        gstNumber:
+                          e.target.value,
+                      })
+                    }
+                    placeholder="27AAAAA0000A1Z5"
+                  />
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Full Address *</label>
-                <textarea className="form-textarea" rows={2} required value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} placeholder="Shop / Office address..." />
+                <label className="form-label">
+                  Full Address *
+                </label>
+
+                <textarea
+                  className="form-textarea"
+                  rows={2}
+                  required
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: e.target.value,
+                    })
+                  }
+                  placeholder="Shop / Office address..."
+                />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
+                }}
+              >
                 <div className="form-group">
-                  <label className="form-label">Follow-up Date</label>
-                  <input type="date" className="form-input" value={formData.followUpDate} onChange={(e) => setFormData({ ...formData, followUpDate: e.target.value })} />
+                  <label className="form-label">
+                    Follow-up Date
+                  </label>
+
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={formData.followUpDate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        followUpDate:
+                          e.target.value,
+                      })
+                    }
+                  />
                 </div>
+
                 <div className="form-group">
-                  <label className="form-label">Initial Notes</label>
-                  <input type="text" className="form-input" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Brief background notes" />
+                  <label className="form-label">
+                    Initial Notes
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.notes}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        notes: e.target.value,
+                      })
+                    }
+                    placeholder="Brief background notes"
+                  />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setIsAddModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Customer</button>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '0.75rem',
+                  marginTop: '1rem',
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    setIsAddModalOpen(false)
+                  }
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                >
+                  Save Customer
+                </button>
               </div>
             </form>
           </div>
@@ -342,120 +771,453 @@ export const CustomerView: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content animate-fade-in">
             <div className="modal-header">
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#f8fafc' }}>Edit Customer Profile</h3>
-              <button onClick={() => setIsEditModalOpen(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>
+              <h3
+                style={{
+                  fontSize: '1.125rem',
+                  fontWeight: 700,
+                  color: '#f8fafc',
+                }}
+              >
+                Edit Customer Profile
+              </h3>
+
+              <button
+                onClick={() =>
+                  setIsEditModalOpen(false)
+                }
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={20} />
+              </button>
             </div>
+
             <form onSubmit={handleEditSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '1rem',
+                }}
+              >
                 <div className="form-group">
-                  <label className="form-label">Customer Name</label>
-                  <input type="text" className="form-input" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  <label className="form-label">
+                    Customer Name
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        name: e.target.value,
+                      })
+                    }
+                  />
                 </div>
+
                 <div className="form-group">
-                  <label className="form-label">Business Name</label>
-                  <input type="text" className="form-input" value={formData.businessName} onChange={(e) => setFormData({ ...formData, businessName: e.target.value })} />
+                  <label className="form-label">
+                    Business Name
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.businessName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        businessName:
+                          e.target.value,
+                      })
+                    }
+                  />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns:
+                    '1fr 1fr 1fr',
+                  gap: '1rem',
+                }}
+              >
                 <div className="form-group">
-                  <label className="form-label">Customer Type</label>
-                  <select className="form-select" value={formData.customerType} onChange={(e) => setFormData({ ...formData, customerType: e.target.value })}>
-                    <option value="WHOLESALE">Wholesale</option>
-                    <option value="RETAIL">Retail</option>
-                    <option value="DISTRIBUTOR">Distributor</option>
+                  <label className="form-label">
+                    Customer Type
+                  </label>
+
+                  <select
+                    className="form-select"
+                    value={formData.customerType}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        customerType:
+                          e.target.value,
+                      })
+                    }
+                  >
+                    <option value="WHOLESALE">
+                      Wholesale
+                    </option>
+                    <option value="RETAIL">
+                      Retail
+                    </option>
+                    <option value="DISTRIBUTOR">
+                      Distributor
+                    </option>
                   </select>
                 </div>
+
                 <div className="form-group">
-                  <label className="form-label">Status</label>
-                  <select className="form-select" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
-                    <option value="LEAD">Lead</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
+                  <label className="form-label">
+                    Status
+                  </label>
+
+                  <select
+                    className="form-select"
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="LEAD">
+                      Lead
+                    </option>
+                    <option value="ACTIVE">
+                      Active
+                    </option>
+                    <option value="INACTIVE">
+                      Inactive
+                    </option>
                   </select>
                 </div>
+
                 <div className="form-group">
-                  <label className="form-label">GSTIN</label>
-                  <input type="text" className="form-input" value={formData.gstNumber} onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })} />
+                  <label className="form-label">
+                    GSTIN
+                  </label>
+
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.gstNumber}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        gstNumber:
+                          e.target.value,
+                      })
+                    }
+                  />
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Full Address</label>
-                <textarea className="form-textarea" rows={2} value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+                <label className="form-label">
+                  Full Address
+                </label>
+
+                <textarea
+                  className="form-textarea"
+                  rows={2}
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: e.target.value,
+                    })
+                  }
+                />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Update Profile</button>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: '0.75rem',
+                  marginTop: '1rem',
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    setIsEditModalOpen(false)
+                  }
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                >
+                  Update Profile
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* DETAIL DRAWER / MODAL */}
+      {/* DETAIL MODAL */}
       {detailCustomer && (
         <div className="modal-overlay">
-          <div className="modal-content animate-fade-in" style={{ maxWidth: '750px' }}>
+          <div
+            className="modal-content animate-fade-in"
+            style={{ maxWidth: '750px' }}
+          >
             <div className="modal-header">
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f8fafc' }}>{detailCustomer.name}</h3>
-                <p style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>{detailCustomer.businessName} | {detailCustomer.customerType}</p>
+                <h3
+                  style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 800,
+                    color: '#f8fafc',
+                  }}
+                >
+                  {detailCustomer.name}
+                </h3>
+
+                <p
+                  style={{
+                    fontSize: '0.8125rem',
+                    color: '#94a3b8',
+                  }}
+                >
+                  {detailCustomer.businessName} |{' '}
+                  {detailCustomer.customerType}
+                </p>
               </div>
-              <button onClick={() => setDetailCustomer(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>
+
+              <button
+                onClick={() =>
+                  setDetailCustomer(null)
+                }
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={20} />
+              </button>
             </div>
 
-            {/* Customer Details Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: '#111827', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem' }}>
-              <div><Phone size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> <strong>Mobile:</strong> {detailCustomer.mobile}</div>
-              <div><Mail size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> <strong>Email:</strong> {detailCustomer.email}</div>
-              <div><Building size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> <strong>GSTIN:</strong> {detailCustomer.gstNumber || 'N/A'}</div>
-              <div><Calendar size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> <strong>Follow-up:</strong> {detailCustomer.followUpDate || 'None'}</div>
-              <div style={{ gridColumn: 'span 2' }}><strong>Address:</strong> {detailCustomer.address}</div>
+            {/* Customer Details */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '1rem',
+                background: '#111827',
+                padding: '1rem',
+                borderRadius: '10px',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <div>
+                <Phone
+                  size={14}
+                  style={{
+                    display: 'inline',
+                    verticalAlign: 'middle',
+                  }}
+                />{' '}
+                <strong>Mobile:</strong>{' '}
+                {detailCustomer.mobile}
+              </div>
+
+              <div>
+                <Mail
+                  size={14}
+                  style={{
+                    display: 'inline',
+                    verticalAlign: 'middle',
+                  }}
+                />{' '}
+                <strong>Email:</strong>{' '}
+                {detailCustomer.email}
+              </div>
+
+              <div>
+                <Building
+                  size={14}
+                  style={{
+                    display: 'inline',
+                    verticalAlign: 'middle',
+                  }}
+                />{' '}
+                <strong>GSTIN:</strong>{' '}
+                {detailCustomer.gstNumber || 'N/A'}
+              </div>
+
+              <div>
+                <Calendar
+                  size={14}
+                  style={{
+                    display: 'inline',
+                    verticalAlign: 'middle',
+                  }}
+                />{' '}
+                <strong>Follow-up:</strong>{' '}
+                {detailCustomer.followUpDate ||
+                  'None'}
+              </div>
+
+              <div
+                style={{
+                  gridColumn: 'span 2',
+                }}
+              >
+                <strong>Address:</strong>{' '}
+                {detailCustomer.address}
+              </div>
             </div>
 
-            {/* Follow-up Notes Timeline */}
-            <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#f8fafc', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <MessageSquare size={18} color="#3b82f6" /> CRM Follow-up History ({detailCustomer.followUps?.length || 0})
+            {/* Follow-up History */}
+            <h4
+              style={{
+                fontSize: '1rem',
+                fontWeight: 700,
+                color: '#f8fafc',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+            >
+              <MessageSquare
+                size={18}
+                color="#3b82f6"
+              />
+
+              CRM Follow-up History (
+              {detailCustomer.followUps?.length || 0}
+              )
             </h4>
 
-            <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-              {detailCustomer.followUps?.length === 0 ? (
-                <p style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>No follow-up notes recorded yet.</p>
+            <div
+              style={{
+                maxHeight: '200px',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem',
+                marginBottom: '1.5rem',
+              }}
+            >
+              {detailCustomer.followUps?.length ===
+              0 ? (
+                <p
+                  style={{
+                    fontSize: '0.8125rem',
+                    color: '#94a3b8',
+                  }}
+                >
+                  No follow-up notes recorded yet.
+                </p>
               ) : (
-                detailCustomer.followUps?.map((f: any) => (
-                  <div key={f.id} style={{ background: '#1e293b', padding: '0.75rem 1rem', borderRadius: '8px', borderLeft: '3px solid #3b82f6' }}>
-                    <p style={{ fontSize: '0.875rem', color: '#f1f5f9' }}>{f.note}</p>
-                    <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.25rem', display: 'block' }}>
-                      By {f.createdBy?.name} ({f.createdBy?.role}) on {new Date(f.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                ))
+                detailCustomer.followUps?.map(
+                  (f: any) => (
+                    <div
+                      key={f.id}
+                      style={{
+                        background: '#1e293b',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '8px',
+                        borderLeft:
+                          '3px solid #3b82f6',
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: '0.875rem',
+                          color: '#f1f5f9',
+                        }}
+                      >
+                        {f.note}
+                      </p>
+
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          color: '#94a3b8',
+                          marginTop: '0.25rem',
+                          display: 'block',
+                        }}
+                      >
+                        By {f.createdBy?.name}{' '}
+                        ({f.createdBy?.role}) on{' '}
+                        {new Date(
+                          f.createdAt
+                        ).toLocaleString()}
+                      </span>
+                    </div>
+                  )
+                )
               )}
             </div>
 
-            {/* Add Follow-up Form */}
+            {/* Add Follow-up */}
             {hasRole(['ADMIN', 'SALES']) && (
-              <form onSubmit={handleAddFollowUp} style={{ background: '#111827', padding: '1rem', borderRadius: '10px' }}>
-                <label className="form-label">Add New CRM Note</label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <form
+                onSubmit={handleAddFollowUp}
+                style={{
+                  background: '#111827',
+                  padding: '1rem',
+                  borderRadius: '10px',
+                }}
+              >
+                <label className="form-label">
+                  Add New CRM Note
+                </label>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '0.5rem',
+                  }}
+                >
                   <input
                     type="text"
                     className="form-input"
                     placeholder="Type follow-up conversation notes..."
                     value={followUpNote}
-                    onChange={(e) => setFollowUpNote(e.target.value)}
+                    onChange={(e) =>
+                      setFollowUpNote(
+                        e.target.value
+                      )
+                    }
                     required
                   />
-                  <button type="submit" className="btn btn-primary">Add Note</button>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                  >
+                    Add Note
+                  </button>
                 </div>
               </form>
             )}
           </div>
         </div>
       )}
-
     </div>
   );
 };
